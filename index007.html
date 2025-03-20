@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distance Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f8ff;
+            /* Light, airy background */
+            color: #333;
+            overflow: hidden;
+            /* Prevent scrollbars */
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(to right, #a8dadc, #457b9d);
+            /* Soft gradient */
+            color: #fff;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* Container Styles */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            border-radius: 12px;
+            margin: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        /* Map Styles */
+        #map {
+            flex: 2;
+            height: 100%;
+            border-radius: 12px 0 0 12px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            flex: 1;
+            width: 350px;
+            background-color: #fff;
+            padding: 2rem;
+            overflow-y: auto;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #8ac4ff;
+            /* More vibrant focus color */
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            padding-right: 2.5rem;
+        }
+
+        button {
+            background-color: #64b5f6;
+            /* Cool blue */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        button:hover {
+            background-color: #42a5f5;
+            /* Slightly darker blue on hover */
+        }
+
+        /* Checkbox Styles */
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Route Info Styles */
+        .route-info {
+            background-color: #f0f8ff;
+            /* Even lighter grey */
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 1.5rem;
+        }
+
+        .route-info h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #e0e5ff;
+            padding-bottom: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .waypoint {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .waypoint-icon {
+            margin-right: 0.75rem;
+            color: #64b5f6;
+        }
+
+        /* Traffic Alert Styles */
+        .traffic-alert {
+            background-color: #ffebee;
+            /* Lightest red */
+            border-left: 4px solid #ef5350;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+            color: #b71c1c;
+            /* Deeper red text */
+        }
+
+        /* Traffic Alert Levels */
+        .traffic-level-low {
+            background-color: #ffffe0;
+            /* Pale Yellow */
+            border-left-color: #ffc107;
+            color: #665400;
+        }
+
+        .traffic-level-moderate {
+            background-color: #ffdab9;
+            /* Light Orange */
+            border-left-color: #ff8f00;
+            color: #8b572a;
+        }
+
+        .traffic-level-heavy {
+            background-color: #ffebee;
+            /* Light Red */
+            border-left-color: #f44336;
+            color: #b71c1c;
+        }
+
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                margin: 1rem;
+            }
+
+            .sidebar {
+                width: 100%;
+                order: -1;
+                border-radius: 12px 12px 0 0;
+                margin-bottom: 1rem;
+            }
+
+            #map {
+                height: 50vh;
+                border-radius: 0 0 12px 12px;
+            }
+        }
+
+        /* Interactive Styles */
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Typography */
+        p,
+        div {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* New Styles */
+        .mode-icon {
+            margin-right: 0.5rem;
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+        }
+
+        /* Current Location Button */
+        #use-current-location {
+            background-color: #81c784;
+            /* Soft green */
+        }
+
+        #use-current-location:hover {
+            background-color: #66bb6a;
+            /* Darker green */
+        }
+
+        /* Clear Map Button */
+        #clear {
+            background-color: #e57373;
+            /* Soft red */
+        }
+
+        #clear:hover {
+            background-color: #f44336;
+            /* More vibrant red */
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container,
+        header,
+        .sidebar {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Header Icon Styles */
+        header i {
+            font-size: 1.2rem;
+            color: #bbdefb;
+            /* Lighter blue */
+        }
+
+        /* Button Border Radius for consistency */
+        #use-current-location,
+        #clear,
+        #calculate {
+            border-radius: 20px;
+            padding: 0.75rem 1.25rem;
+            /* More padding */
+        }
+
+        /* Make the select dropdown pretty */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            width: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            padding-right: 2.5rem;
+        }
+
+        /* New color scheme */
+        :root {
+            --primary-color: #29ABE2;
+            /* Light Blue */
+            --secondary-color: #F26419;
+            /* Orange */
+            --accent-color: #6639A6;
+            /* Purple */
+            --background-color: #ECF8F9;
+            /* Very Light Cyan */
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+        }
+
+        button {
+            background-color: var(--primary-color);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .route-info {
+            background-color: var(--background-color);
+        }
+
+        .waypoint-icon {
+            color: var(--accent-color);
+        }
+
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>MapWiz</h1>
+        <div style="color:#bbdefb">
+            <i class="fa fa-route" ></i> Plan Your Journey with Ease!
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="map"></div>
+
+        <div class="sidebar">
+            <div class="input-group">
+                <label for="start">Starting Point:</label>
+                <input type="text" id="start" placeholder="Click on the map to select" readonly>
+                <button id="use-current-location"><i class="fas fa-location-arrow mode-icon"></i> Use Current
+                    Location</button>
+            </div>
+
+            <div class="input-group">
+                <label for="destination">Destination:</label>
+                <input type="text" id="destination" placeholder="Click on the map to select" readonly>
+            </div>
+
+            <div class="input-group">
+                <label for="mode">Travel Mode:</label>
+                <select id="mode">
+                    <option value="driving"><i class="fas fa-car mode-icon"></i> Road (Driving)</option>
+                    <option value="walking"><i class="fas fa-walking mode-icon"></i> Walking</option>
+                    <option value="bicycling"><i class="fas fa-bicycle mode-icon"></i> Bicycling</option>
+                    <option value="transit"><i class="fas fa-train mode-icon"></i> Public Transit</option>
+                    <option value="flight"><i class="fas fa-plane mode-icon"></i> Air (Flight)</option>
+                    <option value="ferry"><i class="fas fa-ship mode-icon"></i> Sea (Ferry)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Options:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="avoid-traffic" checked>
+                    <label for="avoid-traffic">Avoid Traffic</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="avoid-tolls">
+                    <label for="avoid-tolls">Avoid Tolls</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="avoid-highways">
+                    <label for="avoid-highways">Avoid Highways</label>
+                </div>
+            </div>
+
+            <button id="calculate"><i class="fas fa-route mode-icon"></i> Calculate Route</button>
+            <button id="clear"><i class="fas fa-trash mode-icon"></i> Clear Map</button>
+
+            <div id="route-details" class="route-info hidden">
+                <h3>Route Information</h3>
+                <div id="distance-time"></div>
+                <div id="waypoints"></div>
+                <div id="traffic-alerts"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Object
+        const CONFIGURATION = {
+            mapsApiKey: "AIzaSyD5dhZ0lcrrWxN55XRjn6W5k2H83HHml1s", // Replace with your API key
+            defaultCenter: {
+                lat: 40.7128,
+                lng: -74.0060
+            }, // New York
+            defaultZoom: 13
+        };
+
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        let markers = [];
+        let currentInfoWindow = null;
+        let clickCounter = 0; // To track clicks for setting start and destination
+        let startLatLng = null;
+        let destinationLatLng = null;
+        let startMarker = null;
+        let destinationMarker = null;
+        let startLine = null;
+        let destinationLine = null;
+
+
+        // Initialize the map when Google Maps API loads
+        function initMap() {
+            console.log("initMap called");
+
+            // Create map centered on a default location
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: CONFIGURATION.defaultCenter,
+                zoom: CONFIGURATION.defaultZoom,
+                mapTypeControl: true,
+                fullscreenControl: true,
+                streetViewControl: true
+            });
+
+            // Initialize the directions service and renderer
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                draggable: false,
+                panel: document.getElementById('waypoints')
+            });
+
+            // Add click listener to the map for setting start and destination
+            map.addListener('click', function (event) {
+                handleMapClick(event.latLng);
+            });
+
+            // Add event listeners for buttons
+            document.getElementById('calculate').addEventListener('click', calculateRoute);
+            document.getElementById('clear').addEventListener('click', clearMap);
+            document.getElementById('use-current-location').addEventListener('click', useCurrentLocation);
+
+            console.log("initMap complete");
+        }
+
+        // Handle clicks on the map to set start and destination
+        function handleMapClick(latLng) {
+
+            if (clickCounter === 0) {
+                // First click: set starting point
+                startLatLng = latLng;
+                geocodeLatLng(latLng, 'start');
+                // Add marker at the EXACT click location
+                if (startMarker) {
+                    startMarker.setMap(null); // Remove existing marker
+                    markers = markers.filter(marker => marker !== startMarker); // Remove from markers array
+                    removeStartLine()
+                }
+                startMarker = addMarker(latLng, 'Start'); // Create a new marker
+                clickCounter = 1; //Move to Destination
+            } else if (clickCounter === 1) {
+                // Second click: set destination
+                destinationLatLng = latLng;
+                geocodeLatLng(latLng, 'destination');
+                // Add marker at the EXACT click location
+                if (destinationMarker) {
+                    destinationMarker.setMap(null); // Remove existing marker
+                    markers = markers.filter(marker => marker !== destinationMarker); // Remove from markers array
+                    removeDestinationLine()
+                }
+                destinationMarker = addMarker(latLng, 'Destination'); // Create a new marker
+                clickCounter = 0; //Reset
+            }
+        }
+
+        // Geocode LatLng to address and set the input field
+        function geocodeLatLng(latLng, inputId) {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'location': latLng
+            }, function (results, status) {
+                if (status === 'OK') {
+                    if (results[0]) {
+                        document.getElementById(inputId).value = results[0].formatted_address;
+                        document.getElementById(inputId).placeId = results[0].place_id;
+                    } else {
+                        document.getElementById(inputId).value = 'No address found';
+                        document.getElementById(inputId).placeId = null;
+                    }
+                } else {
+                    document.getElementById(inputId).value = 'Geocoding failed';
+                    document.getElementById(inputId).placeId = null;
+                }
+            });
+        }
+
+        // Use the current location as DESTINATION
+        function useCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        if (clickCounter === 0) {
+                            //ClickCounter == 0 means we haven't selected a Start Yet.
+                            map.setCenter(pos);
+                            geocodeLatLng(new google.maps.LatLng(pos.lat, pos.lng), 'start');
+                            startLatLng = new google.maps.LatLng(pos.lat, pos.lng)
+                            clickCounter = 1;
+                            // Add marker at current location
+                            if (startMarker) {
+                                startMarker.setMap(null); // Remove existing marker
+                                markers = markers.filter(marker => marker !== startMarker); // Remove from markers array
+                                removeStartLine()
+                            }
+                            startMarker = addMarker(new google.maps.LatLng(pos.lat, pos.lng), 'Start');
+
+                        } else {
+                            //ClickCounter == 1 means a start exists, destination should be set
+
+                            map.setCenter(pos);
+                            geocodeLatLng(new google.maps.LatLng(pos.lat, pos.lng), 'destination');
+                            destinationLatLng = new google.maps.LatLng(pos.lat, pos.lng)
+                            clickCounter = 0;
+                            // Add marker at current location
+                            if (destinationMarker) {
+                                destinationMarker.setMap(null); // Remove existing marker
+                                markers = markers.filter(marker => marker !== destinationMarker); // Remove from markers array
+                                removeDestinationLine()
+                            }
+                            destinationMarker = addMarker(new google.maps.LatLng(pos.lat, pos.lng), 'Destination');
+
+                        }
+
+                    },
+                    function (error) {
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                alert("User denied the request for Geolocation.");
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                alert("Location information is unavailable.");
+                                break;
+                            case error.TIMEOUT:
+                                alert("The request to get user location timed out.");
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                alert("An unknown error occurred.");
+                                break;
+                        }
+                    }
+                );
+            } else {
+                alert('Error: Your browser doesn\'t support geolocation.');
+            }
+        }
+
+        // Add a marker to the map
+        function addMarker(location, title = 'Marked Location') {
+            const marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                title: title,
+                animation: google.maps.Animation.DROP,
+                draggable: false, // Set draggable to false
+            });
+
+            markers.push(marker);
+
+            // Create info window with location info
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div>
+                        <h3>${title}</h3>
+                        <p>Lat: ${location.lat().toFixed(6)}, Lng: ${location.lng().toFixed(6)}</p>
+                        </div>
+                `
+            });
+
+            // Show info window when marker is clicked
+            marker.addListener('click', function () {
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                }
+                infoWindow.open(map, marker);
+                currentInfoWindow = infoWindow;
+            });
+            if (title === "Start") {
+                // Draw dotted line from initial click location to the address.
+                drawStartLine(location)
+            } else {
+                drawDestinationLine(location)
+            }
+
+            return marker;
+        }
+
+        function removeStartLine() {
+            if (startLine) {
+                startLine.setMap(null);
+                startLine = null;
+            }
+        }
+
+        function removeDestinationLine() {
+            if (destinationLine) {
+                destinationLine.setMap(null);
+                destinationLine = null;
+            }
+        }
+
+        //Draw Dotted Lines
+        function drawStartLine(address) {
+            removeStartLine()
+            startLine = new google.maps.Polyline({
+                path: [startLatLng, address],
+                strokeColor: "#FFFFFF",
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+                geodesic: true,
+                map: map,
+                icons: [{
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 2,
+                        strokeColor: 'white'
+                    },
+                    offset: '0',
+                    repeat: '10px'
+                }]
+            });
+        }
+
+        function drawDestinationLine(address) {
+            removeDestinationLine()
+            destinationLine = new google.maps.Polyline({
+                path: [destinationLatLng, address],
+                strokeColor: "#FFFFFF",
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+                geodesic: true,
+                map: map,
+                icons: [{
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 2,
+                        strokeColor: 'white'
+                    },
+                    offset: '0',
+                    repeat: '10px'
+                }]
+            });
+        }
+        // Calculate and display the route
+        function calculateRoute() {
+            console.log("calculateRoute called");
+
+            const start = document.getElementById('start').value;
+            const destination = document.getElementById('destination').value;
+            const mode = document.getElementById('mode').value;
+            const startPlaceId = document.getElementById('start').placeId;
+            const destinationPlaceId = document.getElementById('destination').placeId;
+
+            if (!start || !destination) {
+                alert('Please select both starting point and destination.');
+                return;
+            }
+
+            //  Ensure that startLatLng and destinationLatLng are defined
+            if (!startLatLng || !destinationLatLng) {
+                alert('Please select both starting and destination points on the map.');
+                return;
+            }
+
+
+            if (mode === 'flight' || mode === 'ferry') {
+                calculateCustomRoute(start, destination, mode);
+                return;
+            }
+
+            const travelMode = getTravelMode(mode);
+            const avoidOptions = getAvoidOptions();
+
+            const request = {
+                origin: startPlaceId ? {
+                    placeId: startPlaceId
+                } : startLatLng,
+                destination: destinationPlaceId ? {
+                    placeId: destinationPlaceId
+                } : destinationLatLng,
+                travelMode: travelMode,
+                avoidTolls: avoidOptions.avoidTolls,
+                avoidHighways: avoidOptions.avoidHighways,
+            };
+
+            directionsService.route(request, function (response, status) {
+                if (status === 'OK') {
+                    directionsRenderer.setMap(map); // Ensure the renderer is attached to the map
+                    directionsRenderer.setDirections(response);
+                    const route = response.routes[0];
+
+
+                    document.getElementById('route-details').classList.remove('hidden');
+
+                    displayRouteInfo(route);
+
+                    if (mode === 'driving' && document.getElementById('avoid-traffic').checked) {
+                        checkTrafficAlerts(route);
+                    }
+                } else {
+                    alert('Directions request failed due to ' + status);
+                    directionsRenderer.setMap(null);
+                }
+            });
+            console.log("calculateRoute complete");
+        }
+
+
+
+        // Calculate custom routes for flights and ferries
+        function calculateCustomRoute(start, destination, mode) {
+            // Use Geocoding service to get coordinates for start and destination
+            const geocoder = new google.maps.Geocoder();
+
+            geocoder.geocode({
+                'address': start
+            }, function (startResults, startStatus) {
+                if (startStatus !== 'OK') {
+                    alert('Geocode for start was not successful: ' + startStatus);
+                    return;
+                }
+
+                geocoder.geocode({
+                    'address': destination
+                }, function (destResults, destStatus) {
+                    if (destStatus !== 'OK') {
+                        alert('Geocode for destination was not successful: ' + destStatus);
+                        return;
+                    }
+
+                    const startLatLng = startResults[0].geometry.location;
+                    const destLatLng = destResults[0].geometry.location;
+
+                    // Add markers for start and destination
+                    if (startMarker) {
+                        startMarker.setMap(null); // Remove existing marker
+                        markers = markers.filter(marker => marker !== startMarker);
+                    }
+
+                    if (destinationMarker) {
+                        destinationMarker.setMap(null); // Remove existing marker
+                        markers = markers.filter(marker => marker !== destinationMarker);
+                    }
+
+                    startMarker = addMarker(startLatLng, 'Start: ' + start);
+                    destinationMarker = addMarker(destLatLng, 'Destination: ' + destination);
+
+                    // Create a polyline between the points
+                    const flightPath = new google.maps.Polyline({
+                        path: [
+                            {
+                                lat: startLatLng.lat(),
+                                lng: startLatLng.lng()
+                            },
+                            {
+                                lat: destLatLng.lat(),
+                                lng: destLatLng.lng()
+                            }
+                        ],
+                        geodesic: true,
+                        strokeColor: mode === 'flight' ? '#FF0000' : '#0000FF',
+                        strokeOpacity: 1.0,
+                        strokeWeight: 3
+                    });
+
+                    flightPath.setMap(map);
+
+                    // Fit bounds to show both points
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend(startLatLng);
+                    bounds.extend(destLatLng);
+                    map.fitBounds(bounds);
+
+                    // Calculate distance
+                    const distance = google.maps.geometry.spherical.computeDistanceBetween(startLatLng,
+                        destLatLng);
+
+                    // Display custom route information
+                    const distanceInKm = (distance / 1000).toFixed(2);
+                    const travelTimeHours = mode === 'flight' ?
+                        (distance / 900000).toFixed(2) : // Approx 900 km/h for flights
+                        (distance / 40000).toFixed(2); // Approx 40 km/h for ferries
+
+                    document.getElementById('route-details').classList.remove('hidden');
+                    document.getElementById('distance-time').innerHTML = `
+                        <p><strong>Distance:</strong> ${distanceInKm} km</p>
+                        <p><strong>Estimated Time:</strong> ${travelTimeHours} hours</p>
+                        <p><strong>Travel Mode:</strong> ${mode === 'flight' ? 'Air (Flight)' : 'Sea (Ferry)'}</p>
+                    `;
+
+                    document.getElementById('waypoints').innerHTML = `
+                        <div class="waypoint">
+                            <span class="waypoint-icon"><i class="fas fa-flag-checkered"></i></span>
+                            <span>${start}</span>
+                        </div>
+                        <div class="waypoint">
+                            <span class="waypoint-icon"><i class="fas fa-map-marker-alt"></i></span>
+                            <span>${destination}</span>
+                        </div>
+                    `;
+
+                    document.getElementById('traffic-alerts').innerHTML = '';
+                });
+            });
+        }
+
+        // Get Google Maps travel mode based on selected option
+        function getTravelMode(mode) {
+            switch (mode) {
+                case 'driving':
+                    return google.maps.TravelMode.DRIVING;
+                case 'walking':
+                    return google.maps.TravelMode.WALKING;
+                case 'bicycling':
+                    return google.maps.TravelMode.BICYCLING;
+                case 'transit':
+                    return google.maps.TravelMode.TRANSIT;
+                default:
+                    return google.maps.TravelMode.DRIVING;
+            }
+        }
+
+        // Get avoidance options from checkboxes
+        function getAvoidOptions() {
+            return {
+                avoidTolls: document.getElementById('avoid-tolls').checked,
+                avoidHighways: document.getElementById('avoid-highways').checked
+            };
+        }
+
+        // Display route information
+        function displayRouteInfo(route) {
+            let totalDistance = 0;
+            let totalDuration = 0;
+
+            // Calculate total distance and duration
+            for (let i = 0; i < route.legs.length; i++) {
+                totalDistance += route.legs[i].distance.value;
+                totalDuration += route.legs[i].duration.value;
+            }
+
+            // Convert to km and minutes
+            const distanceInKm = (totalDistance / 1000).toFixed(2);
+            const durationInMinutes = Math.round(totalDuration / 60);
+            const hours = Math.floor(durationInMinutes / 60);
+            const minutes = durationInMinutes % 60;
+
+            // Display info
+            document.getElementById('distance-time').innerHTML = `
+                <p><strong>Distance:</strong> ${distanceInKm} km</p>
+                <p><strong>Estimated Time:</strong> ${hours > 0 ? hours + ' hr ' : ''}${minutes} min</p>
+                <p><strong>Travel Mode:</strong> ${document.getElementById('mode').options[document.getElementById('mode').selectedIndex].text}</p>
+            `;
+        }
+
+        // Check for traffic alerts along the route
+        function checkTrafficAlerts(route) {
+            const trafficAlertsContainer = document.getElementById('traffic-alerts');
+            trafficAlertsContainer.innerHTML = '';
+            let hasTraffic = false;
+
+            const legs = route.legs;
+
+            for (let i = 0; i < legs.length; i++) {
+                const steps = legs[i].steps;
+
+                for (let j = 0; j < steps.length; j++) {
+                    // Simulate different traffic levels
+                    const trafficLevel = Math.random(); // 0 to 1
+
+                    let alertClass = '';
+                    let alertMessage = '';
+                    let delayMinutes = 0;
+
+                    if (trafficLevel > 0.8) {
+                        alertClass = 'traffic-level-heavy';
+                        alertMessage = `Heavy traffic reported on ${steps[j].instructions.replace(/<[^>]*>/g, '')}.`;
+                        delayMinutes = Math.floor(Math.random() * 30) + 15; // 15-45 min delay
+                    } else if (trafficLevel > 0.5) {
+                        alertClass = 'traffic-level-moderate';
+                        alertMessage = `Moderate traffic on ${steps[j].instructions.replace(/<[^>]*>/g, '')}.`;
+                        delayMinutes = Math.floor(Math.random() * 15) + 5; // 5-20 min delay
+                    } else if (trafficLevel > 0.3) {
+                        alertClass = 'traffic-level-low';
+                        alertMessage = `Slight delays on ${steps[j].instructions.replace(/<[^>]*>/g, '')}.`;
+                        delayMinutes = Math.floor(Math.random() * 5) + 1; // 1-5 min delay
+                    }
+
+                    if (alertClass) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `traffic-alert ${alertClass}`;
+                        alertDiv.innerHTML = `
+                            <strong>Traffic Alert:</strong> ${alertMessage}
+                            Delay of approximately ${delayMinutes} minutes.
+                        `;
+                        trafficAlertsContainer.appendChild(alertDiv);
+                        hasTraffic = true;
+                    }
+                }
+            }
+
+            if (!hasTraffic) {
+                trafficAlertsContainer.innerHTML = '<p>No traffic alerts for this route.</p>';
+            }
+        }
+
+        // Clear the route
+        function clearRoute() {
+            directionsRenderer.setMap(null); // Remove the DirectionsRenderer from the map
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                draggable: false,
+                panel: document.getElementById('waypoints')
+            }); //Reinitialise the renderer
+
+            document.getElementById('route-details').classList.add('hidden');
+        }
+
+        // Clear all markers and the route
+        function clearMap() {
+            clearRoute()
+
+            // Clear input fields
+            document.getElementById('start').value = '';
+            document.getElementById('destination').value = '';
+            document.getElementById('start').placeId = null;
+            document.getElementById('destination').placeId = null;
+            startLatLng = null;
+            destinationLatLng = null;
+            // Clear input fields
+            document.getElementById('start').value = '';
+            document.getElementById('destination').value = '';
+            document.getElementById('start').placeId = null;
+            document.getElementById('destination').placeId = null;
+            startLatLng = null;
+            destinationLatLng = null;
+
+            // Clear markers
+            if (startMarker) {
+                startMarker.setMap(null);
+                startMarker = null;
+            }
+            if (destinationMarker) {
+                destinationMarker.setMap(null);
+                destinationMarker = null;
+            }
+            removeStartLine()
+            removeDestinationLine()
+            markers = [];
+            clickCounter = 0;
+
+            // Hide the route details
+            document.getElementById('route-details').classList.add('hidden');
+
+        }
+
+        // Load the Google Maps API
+        function loadGoogleMapsAPI() {
+            const script = document.createElement('script');
+            script.src =
+                `https://maps.googleapis.com/maps/api/js?key=AIzaSyD5dhZ0lcrrWxN55XRjn6W5k2H83HHml1s&libraries=places,geometry&callback=initMap`; //REPLACE WITH YOUR API KEY
+            script.defer = true;
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        // Initialize the app when the page loads
+        window.onload = function () {
+            loadGoogleMapsAPI();
+        };
+    </script>
+
+</body>
+
+</html>
